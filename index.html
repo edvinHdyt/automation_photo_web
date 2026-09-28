@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otomatisasi Pengambilan Foto</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body>
+    <div class="px-20 py-10 ">
+        <div class="w-full bg-blue-200 px-3 py-1 rounded-md mb-4">
+            <h1 class="text-2xl font-bold mb-2">Otomatisasi Pengambilan Foto</h1>
+        </div>
+        <div class="flex flex-col lg:flex-row lg:items-top justify-content gap-4">
+            <video id="v" autoplay playsinline muted width="720" class="rounded-md"></video>
+            <div class="flex flex-col gap-3 mb-4 w-full rounded-md border-[0.3px] px-3 py-2 shadow-md border-slate-300 max-h-80">
+                <h3 class="font-bold">Opsi Opsi</h3>
+                <div class="flex flex-col gap-2">
+                    <label for="total" class="flex items-center gap-2">
+                        <span class="w-32">Lable Foto</span>
+                        <input type="text" id="labelFoto" value="foto" class="border-[0.3px] border-slate-300 rounded-md px-2 py-1 w-full">
+                    </label>
+                    <label for="total" class="flex items-center gap-2">
+                        <span class="w-32">Jumlah Foto</span>
+                        <input type="number" id="total" value="1" class="border-[0.3px] border-slate-300 rounded-md px-2 py-1 w-full">
+                    </label>
+                    <label for="jeda" class="flex items-center gap-2">
+                        <span class="w-32">Jeda (ms)</span>
+                        <input type="number" id="jeda" value="1000" class="border-[0.3px] border-slate-300 rounded-md px-2 py-1 w-full">
+                    </label>
+                </div>
+                
+                <h3 class="static font-bold w-full">Status Pengambilan Foto</h3>
+                <div class="w-full bg-slate-200 max-h-50 px-3 py-1 rounded-md scrollbar overflow-y-auto">
+                    <ul id="status">
+
+                    </ul>
+                </div>
+                <!-- <p id="status"></p> -->
+                <div class="flex items-end justify-end">
+                    <button id="start" class="bg-blue-400 px-3 py-2 cursor-pointer rounded-md text-white shadow-md">Mulai foto</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script>
+            document.getElementById("start").onclick = async () => {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: {ideal: "environment"} } // "user" untuk kamera depan
+                });
+                const labelFoto = document.getElementById("labelFoto").value;
+                const totalFoto = parseInt(document.getElementById("total").value);
+                const jedaMs = parseInt(document.getElementById("jeda").value);
+
+
+                const v = document.getElementById("v");
+                v.srcObject = stream;
+                await v.play();
+
+                const canvas = document.createElement("canvas");
+                const zip = new JSZip();
+
+                for (let i = 1; i <= totalFoto; i++) {
+                    canvas.width = v.videoWidth;
+                    canvas.height = v.videoHeight;
+                    canvas.getContext("2d").drawImage(v, 0, 0);
+
+                    const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.85));
+                    zip.file(`${labelFoto}_${String(i).padStart(3, "0")}.jpg`, blob);
+
+                    document.getElementById("status").innerHTML += `<li>Foto ${i}/${totalFoto}</li>`;
+                    await new Promise(r => setTimeout(r, jedaMs));
+                }
+
+                stream.getTracks().forEach(t => t.stop());
+                const zipBlob = await zip.generateAsync({ type: "blob" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(zipBlob);
+                a.download = `${labelFoto}_${totalFoto}.zip`;
+                a.click();
+            };
+        </script>
+    </div>
+</body>
+</html>
