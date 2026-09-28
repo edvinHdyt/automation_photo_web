@@ -61,7 +61,11 @@
 
                 setTimeout(async () => {
                     const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: {ideal: "environment"} } // "user" untuk kamera depan
+                        video: { 
+                            facingMode: {ideal: "environment"},
+                            width: {ideal: 4096},
+                            height: {ideal: 2160}
+                        }
                     });
                     const labelFoto = document.getElementById("labelFoto").value;
                     const totalFoto = parseInt(document.getElementById("total").value);
@@ -81,7 +85,7 @@
                             canvas.height = v.videoHeight;
                             canvas.getContext("2d").drawImage(v, 0, 0);
         
-                            const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.85));
+                            const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 1));
                             zip.file(`${labelFoto}_${String(i).padStart(3, "0")}.jpg`, blob);
         
                             document.getElementById("status").innerHTML += `<li>Foto ${i}/${totalFoto}</li>`;
