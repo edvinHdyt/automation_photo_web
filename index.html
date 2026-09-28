@@ -85,7 +85,7 @@
                             canvas.height = v.videoHeight;
                             canvas.getContext("2d").drawImage(v, 0, 0);
         
-                            const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 1));
+                            const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.95));
                             zip.file(`${labelFoto}_${String(i).padStart(3, "0")}.jpg`, blob);
         
                             document.getElementById("status").innerHTML += `<li>Foto ${i}/${totalFoto}</li>`;
